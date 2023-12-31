@@ -1,18 +1,6 @@
-pub mod core;
-
-use core::*;
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+include!("core.rs");
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    // Tests are in doc comments in core.rs
 }

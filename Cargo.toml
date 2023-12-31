@@ -2,3 +2,9 @@
 name = "gitrs"
 version = "0.1.0"
 edition = "2021"
+authors = ["werdl"]
+description = "A simple to use, safe Git wrapper for Rust"
+reamde = "README.md"
+repository = "https://github.com/werdl/gitrs"
+license = "Apache-2.0"
+keywords = ["git", "cli", "wrapper"]

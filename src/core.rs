@@ -1,35 +1,39 @@
 use std::process::Command;
 
+
+/// IsFailure - providing idiomatic ways to access fields without unwrapping
+/// 
+/// Returns options, partly as it might have been piped, and partly as Success does not have the `stderr` field
 pub trait IsFailure {
+    /// idiomatic way to check if a command has failed
     fn failed(&self) -> bool;
+
+    /// get code without unwrapping
     fn code(&self) -> i32;
+
+    /// get stdout without unwrapping
     fn stdout(&self) -> Option<String>;
+
+    /// get stderr without unwrapping
     fn stderr(&self) -> Option<String>;
 }
 
 impl IsFailure for Result<Success, Failure> {
-    /// idiomatic way to check if a command has failed
     fn failed(&self) -> bool {
         self.is_err()
     }
-
-    /// get code without unwrapping
     fn code(&self) -> i32 {
         match self {
             Ok(success) => success.code,
             Err(failure) => failure.code,
         }
     }
-
-    /// get stdout without unwrapping
     fn stdout(&self) -> Option<String> {
         match self {
             Ok(success) => success.stdout.clone(),
             Err(failure) => failure.stdout.clone(),
         }
     }
-
-    /// get stderr without unwrapping
     fn stderr(&self) -> Option<String> {
         match self {
             Ok(_) => None,
@@ -38,11 +42,21 @@ impl IsFailure for Result<Success, Failure> {
     }
 }
 
+/// Successful command execution struct
+/// 
+/// Therefore, `stderr` is no provided
+/// 
+/// sometimes piped to parent, so `Option<String>` is used
 pub struct Success {
-    pub stdout: Option<String>, // sometimes piped to parent stdout
+    pub stdout: Option<String>,
     pub code: i32,
 }
 
+/// Failed command execution struct
+/// 
+/// Therefore, `stderr` is provided
+/// 
+/// sometimes piped to parent, so `Option<String>` is used
 pub struct Failure {
     pub stderr: Option<String>,
     pub stdout: Option<String>,
@@ -59,12 +73,12 @@ pub struct Git {
 impl Git {
     /// Creates a new instance of the Git structure
     /// 
-    /// The provided items must be able to be coerced into a Vec<String>
+    /// The provided items must be able to be coerced into a `Vec<String>`
     /// 
     /// Returned is an instance of the Git struct
     /// # Examples
     /// ```rust
-    /// use gitrs::core::{IsFailure, Git};
+    /// use gitrs::Git;
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// ```
     pub fn new<T>(items: T) -> Git
@@ -85,7 +99,7 @@ impl Git {
     /// stdin, stdout and stderr are all inherited from the parent
     /// # Examples
     /// ```rust
-    /// use gitrs::core::{IsFailure, Git};
+    /// use gitrs::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// let output = cmd.stream();
     /// println!("git log --shortstat returned code {}", output.code());
@@ -118,7 +132,7 @@ impl Git {
     /// stdin, stdout and stderr are all returned in an object
     /// # Examples
     /// ```rust
-    /// use gitrs::core::{IsFailure, Git};
+    /// use gitrs::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// let output = cmd.run();
     /// println!("The output of git log --shortstat was {}", output.stdout().unwrap_or_default());
@@ -147,35 +161,39 @@ impl Git {
 }
 
 pub trait Run {
+    /// run a command straight from a object
     fn run(self) -> Result<Success, Failure>;
-    fn stream(self) -> Result<Success, Failure>;
+
+    /// stream a command straight from a object
+    fn stream(self) -> Result<Success, Failure>; 
 }
 
+/// `run` - allows you to run a command directly from a type that support conversion to `Vec<String>`
+/// 
+/// Works in the same way as the main run function, returning an object
+/// # Examples
+/// ```rust
+/// use gitrs::Run;
+/// let output = vec!["log", "--shortstat"].run();
+/// ```
+/// `stream` - allows you to run a command directly from a type that support conversion to `Vec<String>`
+/// 
+/// Works in the same way as the main run function, returning an object
+/// # Examples
+/// ```rust
+/// use gitrs::Run;
+/// let _ = vec!["log", "--shortstat"].stream();
+/// ```
 impl<T> Run for T
 where
     T: IntoIterator,
     T::Item: ToString,
 {
-    /// Run - allows you to run a command directly from a type that support conversion to Vec<String>
-    /// 
-    /// Works in the same way as the main run function, returning an object
-    /// # Examples
-    /// ```rust
-    /// use gitrs::core::Run;
-    /// let output = vec!["log", "--shortstat"].run();
-    /// ```
+
     fn run(self) -> Result<Success, Failure> {
         Git::new(self.into_iter().map(|x| x.to_string())).run()
     }
 
-    /// Run - allows you to run a command directly from a type that support conversion to Vec<String>
-    /// 
-    /// Works in the same way as the main run function, returning an object
-    /// # Examples
-    /// ```rust
-    /// use gitrs::core::Run;
-    /// let _ = vec!["log", "--shortstat"].stream();
-    /// ```
     fn stream(self) -> Result<Success, Failure> {
         Git::new(self.into_iter().map(|x| x.to_string())).stream()
     }
