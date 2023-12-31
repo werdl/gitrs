@@ -86,7 +86,7 @@ impl Git {
         T: IntoIterator,
         T::Item: ToString, 
     {
-        return Git {
+        Git {
             command: items.into_iter().map(|x| x.to_string()).collect(),
         }
     }
@@ -112,12 +112,12 @@ impl Git {
 
         let output = out.status().expect("Failed to execute `git`");
         if output.success() {
-            return Ok(Success {
+            Ok(Success {
                 stdout: None, 
                 code: output.code().unwrap_or(0)
             })
         } else {
-            return Err(Failure{
+            Err(Failure{
                 stderr: None,
                 stdout: None,
                 code: output.code().unwrap_or(1)
@@ -146,12 +146,12 @@ impl Git {
         let output = out.output().expect("Failed to execute `git`");
 
         if output.status.success() {
-            return Ok(Success {
+            Ok(Success {
                 stdout: Some(String::from_utf8(output.stdout).unwrap_or("".to_string())),
                 code: output.status.code().unwrap_or(0)
             })
         } else {
-            return Err(Failure {
+            Err(Failure {
                 stderr: Some(String::from_utf8(output.stderr).unwrap_or("".to_string())),
                 stdout: Some(String::from_utf8(output.stdout).unwrap_or("".to_string())),
                 code: output.status.code().unwrap_or(1)
