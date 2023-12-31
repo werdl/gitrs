@@ -63,7 +63,7 @@ pub struct Failure {
     pub code: i32,
 }
 
-/// git struct - the core of `gitrs`
+/// git struct - the core of `rsgit`
 /// 
 /// to initialize, see `Git::new`
 pub struct Git {
@@ -78,7 +78,7 @@ impl Git {
     /// Returned is an instance of the Git struct
     /// # Examples
     /// ```rust
-    /// use gitrs::Git;
+    /// use rsgit::Git;
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// ```
     pub fn new<T>(items: T) -> Git
@@ -99,7 +99,7 @@ impl Git {
     /// stdin, stdout and stderr are all inherited from the parent
     /// # Examples
     /// ```rust
-    /// use gitrs::{IsFailure, Git};
+    /// use rsgit::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// let output = cmd.stream();
     /// println!("git log --shortstat returned code {}", output.code());
@@ -132,7 +132,7 @@ impl Git {
     /// stdin, stdout and stderr are all returned in an object
     /// # Examples
     /// ```rust
-    /// use gitrs::{IsFailure, Git};
+    /// use rsgit::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// let output = cmd.run();
     /// println!("The output of git log --shortstat was {}", output.stdout().unwrap_or_default());
@@ -173,7 +173,7 @@ pub trait Run {
 /// Works in the same way as the main run function, returning an object
 /// # Examples
 /// ```rust
-/// use gitrs::Run;
+/// use rsgit::Run;
 /// let output = vec!["log", "--shortstat"].run();
 /// ```
 /// `stream` - allows you to run a command directly from a type that support conversion to `Vec<String>`
@@ -181,7 +181,7 @@ pub trait Run {
 /// Works in the same way as the main run function, returning an object
 /// # Examples
 /// ```rust
-/// use gitrs::Run;
+/// use rsgit::Run;
 /// let _ = vec!["log", "--shortstat"].stream();
 /// ```
 impl<T> Run for T
