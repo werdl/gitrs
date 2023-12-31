@@ -8,10 +8,12 @@ pub trait IsFailure {
 }
 
 impl IsFailure for Result<Success, Failure> {
+    /// idiomatic way to check if a command has failed
     fn failed(&self) -> bool {
         self.is_err()
     }
 
+    /// get code without unwrapping
     fn code(&self) -> i32 {
         match self {
             Ok(success) => success.code,
@@ -19,6 +21,7 @@ impl IsFailure for Result<Success, Failure> {
         }
     }
 
+    /// get stdout without unwrapping
     fn stdout(&self) -> Option<String> {
         match self {
             Ok(success) => success.stdout.clone(),
@@ -26,6 +29,7 @@ impl IsFailure for Result<Success, Failure> {
         }
     }
 
+    /// get stderr without unwrapping
     fn stderr(&self) -> Option<String> {
         match self {
             Ok(_) => None,
@@ -45,12 +49,14 @@ pub struct Failure {
     pub code: i32,
 }
 
+/// git struct - the core of `gitrs`
+/// 
+/// to initialize, see `Git::new`
 pub struct Git {
     command: Vec<String>,
 }
 
 impl Git {
-
     /// Creates a new instance of the Git structure
     /// 
     /// The provided items must be able to be coerced into a Vec<String>
@@ -58,7 +64,7 @@ impl Git {
     /// Returned is an instance of the Git struct
     /// # Examples
     /// ```rust
-    /// use gitrs::core::*;
+    /// use gitrs::core::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// ```
     pub fn new<T>(items: T) -> Git
@@ -79,7 +85,7 @@ impl Git {
     /// stdin, stdout and stderr are all inherited from the parent
     /// # Examples
     /// ```rust
-    /// use gitrs::core::*;
+    /// use gitrs::core::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// let output = cmd.stream();
     /// println!("git log --shortstat returned code {}", output.code());
@@ -112,7 +118,7 @@ impl Git {
     /// stdin, stdout and stderr are all returned in an object
     /// # Examples
     /// ```rust
-    /// use gitrs::core::*;
+    /// use gitrs::core::{IsFailure, Git};
     /// let cmd = Git::new(vec!["log", "--shortstat"]);
     /// let output = cmd.run();
     /// println!("The output of git log --shortstat was {}", output.stdout().unwrap_or_default());
@@ -141,16 +147,36 @@ impl Git {
 }
 
 pub trait Run {
-    fn run(&self) -> Result<Success, Failure>;
-    fn stream(&self) -> Result<Success, Failure>;
+    fn run(self) -> Result<Success, Failure>;
+    fn stream(self) -> Result<Success, Failure>;
 }
 
-impl <T: ToString> Run for T{
-    fn run(&self) -> Result<Success, Failure>{
-        return Git::new(self.to_string().split(" ").collect::<Vec<&str>>()).run();
+impl<T> Run for T
+where
+    T: IntoIterator,
+    T::Item: ToString,
+{
+    /// Run - allows you to run a command directly from a type that support conversion to Vec<String>
+    /// 
+    /// Works in the same way as the main run function, returning an object
+    /// # Examples
+    /// ```rust
+    /// use gitrs::core::Run;
+    /// let output = vec!["log", "--shortstat"].run();
+    /// ```
+    fn run(self) -> Result<Success, Failure> {
+        Git::new(self.into_iter().map(|x| x.to_string())).run()
     }
 
-    fn stream(&self) -> Result<Success, Failure>{
-        return Git::new(self.to_string().split(" ").collect::<Vec<&str>>()).stream();
+    /// Run - allows you to run a command directly from a type that support conversion to Vec<String>
+    /// 
+    /// Works in the same way as the main run function, returning an object
+    /// # Examples
+    /// ```rust
+    /// use gitrs::core::Run;
+    /// let _ = vec!["log", "--shortstat"].stream();
+    /// ```
+    fn stream(self) -> Result<Success, Failure> {
+        Git::new(self.into_iter().map(|x| x.to_string())).stream()
     }
 }
