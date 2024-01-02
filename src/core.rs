@@ -1,6 +1,5 @@
 use std::process::Command;
 
-
 /// IsFailure - providing idiomatic ways to access fields without unwrapping
 /// 
 /// Returns options, partly as it might have been piped, and partly as Success does not have the `stderr` field
@@ -47,6 +46,7 @@ impl IsFailure for Result<Success, Failure> {
 /// Therefore, `stderr` is no provided
 /// 
 /// sometimes piped to parent, so `Option<String>` is used
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Success {
     pub stdout: Option<String>,
     pub code: i32,
@@ -57,6 +57,7 @@ pub struct Success {
 /// Therefore, `stderr` is provided
 /// 
 /// sometimes piped to parent, so `Option<String>` is used
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Failure {
     pub stderr: Option<String>,
     pub stdout: Option<String>,
@@ -66,6 +67,7 @@ pub struct Failure {
 /// git struct - the core of `rsgit`
 /// 
 /// to initialize, see `Git::new`
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Git {
     command: Vec<String>,
 }
